@@ -24,3 +24,30 @@ class Product(db.Model):
 def create_table():
     db.create_all()
     print("Tables created.")
+
+@app.cli.command("drop")
+def drop_tables():
+    db.drop_all()
+    print("Tables dropped.")
+
+@app.cli.command("seed")
+def seed_tables():
+    # Create an instance of products
+    product1 = Product(
+        name = "Product 1",
+        description = "This is product 1",
+        price = 12.99,
+        stock = 5
+    )
+
+    product2 = Product()
+    product2.name = "Product 2"
+    product2.price = 15
+    product2.stock = 0
+
+    # Just like git operations, we must add and commit to the session
+    db.session.add(product1)
+    db.session.add(product2)
+    db.session.commit()
+
+    print("Tables seeded.")

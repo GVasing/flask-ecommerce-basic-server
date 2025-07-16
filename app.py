@@ -153,3 +153,31 @@ def delete_product(product_id):
     else:
         # Send acknowledgement message
         return {"Message": f"Product with id {product_id} does not exist."}
+
+
+# UPDATE method: PUT, PATCH
+# Main differences. PUT has DML and DDL capabilities. PATCH is mainly for DML
+# PUT/PATCH /products/id
+@app.route("/products/<int:product_id>", methods=["PUT", "PATCH"])
+def update_product(product_id):
+    # Statement: UPDATE products SET column_name=value;
+    product = Product.query.get(product_id)
+    # Find the product with the id = product_id
+    # If product exists
+    if product:
+        # Fetch the updated values from the request body
+        body_data = request.get_json()
+        # Update the value(s) - SHORT CIRCUIT
+        product.name = body_data.get("name") or product.name
+        product.description = body_data.get("description") or product.description
+        product.price = body_data.get("price") or product.price
+        product.stock = body_data.get("stock") or product.stock
+
+        db.session.commit()
+
+        # Serialise
+        return jsonify(product_schema.dump(product))
+    # Else
+    else:
+        # Acknowledgement message
+        return {"message": f"Product with id {product_id} does not exist."}

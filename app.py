@@ -9,6 +9,7 @@ load_dotenv()
 
 app = Flask(__name__)
 
+
 #                                     database+driver+://username:password@server:port/databasename  (URI/URL Structure.)
 
 DATABASE_URI = os.getenv("DATABASE_URI")
@@ -186,3 +187,6 @@ def update_product(product_id):
     else:
         # Acknowledgement message
         return {"message": f"Product with id {product_id} does not exist."}
+    
+if __name__ == "__main__":
+    app.run(debug=True)

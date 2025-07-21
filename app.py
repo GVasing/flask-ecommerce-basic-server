@@ -89,13 +89,32 @@ def seed_tables():
 
     product2 = Product(
         name = "Product 2",
+        description= "This is product 2",
         price = 15,
         stock = 0
     )
 
-    # Just like git operations, we must add and commit to the session
+    # Just like git operations, we must add the session
     db.session.add(product1)
     db.session.add(product2)
+
+    # Create a list of categories object
+    categories = [
+        Category(
+            name = "Electronics",
+            description = "Gadgets and Tech"
+        ), Category(
+            name = "Books",
+            description = "Fiction, Non-Fiction, and everything in between"
+        ), Category(
+            name = "Supplies"
+        )
+    ]
+
+    # Add the list to the session
+    db.session.add_all(categories)
+
+    # Commit additions.
     db.session.commit()
 
     print("Tables seeded.")

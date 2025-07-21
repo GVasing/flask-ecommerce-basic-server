@@ -29,6 +29,8 @@ class Product(db.Model):
     price = db.Column(db.Float)
     stock = db.Column(db.Integer)
 
+    # __init__ function not necessary, as SQLAlchemy automatically initialises it for Marshmallow Schemas
+
     def __init__(self, name, description, price, stock):
         self.name = name
         self.description = description
@@ -36,11 +38,15 @@ class Product(db.Model):
         self.stock = stock
 
 class Category(db.Model):
+    # Define table name
     __tablename__ = "categories"
-    # Attributes
+    # Define primary key attribute
     id = db.Column(db.Integer, primary_key=True)
+    # Define non-key attributes
     name = db.Column(db.String(100), nullable=False, unique=True)
     description = db.Column(db.String(255))
+
+    # No __init__ function.  Reason mentioned in previous class/model
 
 
 # Create a class for ProductSchema
@@ -232,5 +238,88 @@ def update_product(product_id):
         # Acknowledgement message
         return {"Message": f"Product with id {product_id} does not exist."}
     
+# Define GET /categories
+@app.route("/categories")
+def get_categories():
+    # Define the GET Statement/Write the query
+    stmt = db.select(Category)
+    # Execute it - using Scalar(s)
+    categories_list = db.session.scalars(stmt)
+    # Serialise it (Convert it to JSON)
+    data = categories_schema.dump(categories_list)
+    # Return it
+    return jsonify(data)
+
+# GET a category
+# GET /categories/{id}
+@app.route("/categories/<int:category_id>")
+def get_single_category(category_id):
+    # Define the GET Statement/Write the query
+    stmt = db.select(Category).where(Category.id == category_id)
+    # Execute it - using Scalar(s)
+    category = db.session.scalar(stmt)
+
+    if category:
+        # Serialise it (Convert it to JSON)
+        data = category_schema.dump(category)
+        # Return it
+        return jsonify(data)
+    else:
+        return jsonify({"message": f"Category with id {category_id} does not exist."}), 404
+
+# CREATE a category
+# POST /categories
+@app.route("/categories", methods=["POST"])
+def create_category():
+    # Statement: INSERT INTO category(arg1, arg2, etc.) VALUES (value1, value2, etc.).
+    # Get the body JSON data
+    body_data = request.get_json()
+    # Create a Product object and pass on the values
+    new_category = Category(
+        name = body_data.get("name"),
+        description= body_data.get("description")
+    )
+    # Add to the session and commit
+    db.session.add(new_category)
+    db.session.commit()
+
+    # Serialise object
+    data = category_schema.dump(new_category)
+
+    # Return newly created category
+    return jsonify(data), 201
+
+
+# DELETE a category
+# DELETE /categories/id
+@app.route("/categories/<int:category_id>", methods=["DELETE"])
+def delete_category(category_id):
+    # Statement: DELETE * FROM categories WHERE id=category_id;
+    # Find the category with the category_id from the database
+    # Statement: SELECT * FROM categories WHERE id=category_id;
+
+    # Method 1:
+    # Define statement
+    stmt = db.select(Category).filter_by(id=category_id)
+    # Implement/Run statment
+    category = db.session.scalar(stmt)
+
+    # OR
+    # Method 2
+    # category = Catgeory.query.get(product_id)
+
+    # If it exists
+    if category:
+        # Delete product
+        db.session.delete(category)
+        db.session.commit()
+        # Send acknowledgement message
+        return {"Message": f"Category with id {category_id} deleted succesfully."}
+    # Else
+    else:
+        # Send acknowledgement message
+        return {"Message": f"Category with id {category_id} does not exist."}
+
+
 if __name__ == "__main__":
     app.run(debug=True)

@@ -35,6 +35,13 @@ class Product(db.Model):
         self.price = price
         self.stock = stock
 
+class Category(db.Model):
+    __tablename__ = "categories"
+    # Attributes
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(100), nullable=False, unique=True)
+    description = db.Column(db.String(255))
+
 
 # Create a class for ProductSchema
 class ProductSchema(SQLAlchemyAutoSchema):
@@ -42,11 +49,23 @@ class ProductSchema(SQLAlchemyAutoSchema):
         model = Product
         load_instace = True
 
+# Create a class for CategorySchema
+class CategorySchema(SQLAlchemyAutoSchema):
+    class Meta:
+        model = Category
+        load_instance = True
+
 # ProductSchema instance to handle multiple products
 products_schema = ProductSchema(many=True)
 
 # ProductSchema instance to handle a single product
 product_schema = ProductSchema()
+
+# CategorySchema instance to handle multiple Categories
+categories_schema = CategorySchema(many=True)
+
+# CategorySchema instance to handle a single Category
+category_schema = CategorySchema()
 
 @app.cli.command("create")
 def create_table():
@@ -192,7 +211,7 @@ def update_product(product_id):
     # Else
     else:
         # Acknowledgement message
-        return {"message": f"Product with id {product_id} does not exist."}
+        return {"Message": f"Product with id {product_id} does not exist."}
     
 if __name__ == "__main__":
     app.run(debug=True)
